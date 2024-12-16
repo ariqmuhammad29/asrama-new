@@ -835,80 +835,6 @@ class ReservasiModel
         }
     }
 
-    public void FilteringByStatus(string filter)
-    {
-        try
-        {
-            using (var connection = GetConnection())
-            {
-                connection.Open();
-
-                string query = @"
-            SELECT 
-                r.ReservasiID,
-                m.NamaMahasiswa,
-                k.NamaKamar,
-                r.TanggalMasuk,
-                r.TanggalKeluar,
-                r.StatusReservasi
-            FROM 
-                reservasikamar_0405 r
-            INNER JOIN 
-                mahasiswa_0405 m ON r.MahasiswaID = m.MahasiswaID
-            INNER JOIN 
-                kamarasrama_0405 k ON r.KamarID = k.KamarID
-            WHERE 
-                r.StatusReservasi LIKE @keyword";
-
-                using (var cmd = new MySqlCommand(query, connection))
-                {
-                    cmd.Parameters.AddWithValue("@keyword", "%" + filter + "%");
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        Console.WriteLine("\nHasil Pencarian Reservasi Kamar:");
-                        Console.WriteLine("----------------------------------------------------------------------------");
-                        Console.WriteLine("ID Reservasi | Nama Mahasiswa | Nama Kamar | Tanggal Masuk | Tanggal Keluar | Status");
-                        Console.WriteLine("----------------------------------------------------------------------------");
-
-                        bool hasResults = false;
-
-                        while (reader.Read())
-                        {
-                            hasResults = true;
-                            long reservasiId = reader.GetInt64("ReservasiID");
-                            string mahasiswaName = reader.GetString("NamaMahasiswa");
-                            string kamarName = reader.GetString("NamaKamar");
-
-                            string tanggalMasukStr = reader.IsDBNull(reader.GetOrdinal("TanggalMasuk"))
-                                ? "NULL"
-                                : reader.GetDateTime("TanggalMasuk").ToString("yyyy-MM-dd");
-                            string tanggalKeluarStr = reader.IsDBNull(reader.GetOrdinal("TanggalKeluar"))
-                                ? "NULL"
-                                : reader.GetDateTime("TanggalKeluar").ToString("yyyy-MM-dd");
-
-                            string status = reader.IsDBNull(reader.GetOrdinal("StatusReservasi"))
-                                ? "NULL"
-                                : reader.GetString("StatusReservasi");
-
-                            Console.WriteLine($"{reservasiId} | {mahasiswaName} | {kamarName} | {tanggalMasukStr} | {tanggalKeluarStr} | {status}");
-                        }
-
-                        if (!hasResults)
-                        {
-                            Console.WriteLine("Tidak ada data yang ditemukan.");
-                        }
-
-                        Console.WriteLine("----------------------------------------------------------------------------");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saat mencari data reservasi: {ex.Message}");
-        }
-    }
 
     public void Update(long reservasiId, long mahasiswaId, long kamarId, string dateIn, string dateOut, string status)
     {
@@ -1174,72 +1100,6 @@ class PengaduanModel
         }
     }
 
-    public void Search(string searchQuery)
-    {
-        try
-        {
-            using (var connection = GetConnection())
-            {
-                connection.Open();
-
-                string query = @"
-            SELECT 
-                p.PengaduanID,
-                m.NamaMahasiswa,
-                h.NamaHelpDesk,
-                p.TanggalPengaduan,
-                p.Deskripsi,
-                p.StatusPengaduan
-            FROM 
-                pengaduanhelpdesk_0405 p
-            INNER JOIN 
-                mahasiswa_0405 m ON p.MahasiswaID = m.MahasiswaID
-            INNER JOIN 
-                helpdesk_0405 h ON p.HelpDeskID = h.HelpDeskID
-            WHERE 
-                p.PengaduanID LIKE @searchQuery OR
-                m.NamaMahasiswa LIKE @searchQuery OR
-                h.NamaHelpDesk LIKE @searchQuery OR
-                p.TanggalPengaduan LIKE @searchQuery OR
-                p.Deskripsi LIKE @searchQuery OR
-                p.StatusPengaduan LIKE @searchQuery";
-
-                using (var cmd = new MySqlCommand(query, connection))
-                {
-                    cmd.Parameters.AddWithValue("@searchQuery", "%" + searchQuery + "%");
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        Console.WriteLine("\nHasil Pencarian:");
-                        Console.WriteLine("---------------------------------------------------------------------------------------------");
-                        Console.WriteLine("ID Pengaduan | Nama Mahasiswa | Nama HelpDesk | Tanggal Pengaduan | Deskripsi | Status");
-                        Console.WriteLine("---------------------------------------------------------------------------------------------");
-
-                        while (reader.Read())
-                        {
-                            long pengaduanId = reader.GetInt64("PengaduanID");
-                            string mahasiswaName = reader.GetString("NamaMahasiswa");
-                            string helpDeskName = reader.GetString("NamaHelpDesk");
-                            string tanggalPengaduan = reader.IsDBNull(reader.GetOrdinal("TanggalPengaduan"))
-                                ? "NULL"
-                                : reader.GetDateTime("TanggalPengaduan").ToString("yyyy-MM-dd");
-                            string deskripsi = reader.GetString("Deskripsi");
-                            string statusPengaduan = reader.GetString("StatusPengaduan");
-
-                            Console.WriteLine($"{pengaduanId} | {mahasiswaName} | {helpDeskName} | {tanggalPengaduan} | {deskripsi} | {statusPengaduan}");
-                        }
-
-                        Console.WriteLine("---------------------------------------------------------------------------------------------");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saat mencari data: {ex.Message}");
-        }
-    }
-
     public void Update(long pengaduanId, long mahasiswaId, long helpDeskId, string date, string description, string status)
     {
         try
@@ -1312,67 +1172,6 @@ class PengaduanModel
             Console.WriteLine($"Error saat menghapus data: {ex.Message}");
         }
     }
-
-    public void FilteringByStatus(string status)
-    {
-        try
-        {
-            using (var connection = GetConnection())
-            {
-                connection.Open();
-
-                string query = @"
-            SELECT 
-                p.PengaduanID,
-                m.NamaMahasiswa,
-                h.NamaHelpDesk,
-                p.TanggalPengaduan,
-                p.Deskripsi,
-                p.StatusPengaduan
-            FROM 
-                pengaduanhelpdesk_0405 p
-            INNER JOIN 
-                mahasiswa_0405 m ON p.MahasiswaID = m.MahasiswaID
-            INNER JOIN 
-                helpdesk_0405 h ON p.HelpDeskID = h.HelpDeskID
-            WHERE 
-                p.StatusPengaduan = @status";
-
-                using (var cmd = new MySqlCommand(query, connection))
-                {
-                    cmd.Parameters.AddWithValue("@status", status);
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        Console.WriteLine("\nData Pengaduan HelpDesk Berdasarkan Status: " + status);
-                        Console.WriteLine("---------------------------------------------------------------------------------------------");
-                        Console.WriteLine("ID Pengaduan | Nama Mahasiswa | Nama HelpDesk | Tanggal Pengaduan | Deskripsi | Status");
-                        Console.WriteLine("---------------------------------------------------------------------------------------------");
-
-                        while (reader.Read())
-                        {
-                            long pengaduanId = reader.GetInt64("PengaduanID");
-                            string mahasiswaName = reader.GetString("NamaMahasiswa");
-                            string helpDeskName = reader.GetString("NamaHelpDesk");
-                            string tanggalPengaduan = reader.IsDBNull(reader.GetOrdinal("TanggalPengaduan"))
-                                ? "NULL"
-                                : reader.GetDateTime("TanggalPengaduan").ToString("yyyy-MM-dd");
-                            string deskripsi = reader.GetString("Deskripsi");
-                            string statusPengaduan = reader.GetString("StatusPengaduan");
-
-                            Console.WriteLine($"{pengaduanId} | {mahasiswaName} | {helpDeskName} | {tanggalPengaduan} | {deskripsi} | {statusPengaduan}");
-                        }
-
-                        Console.WriteLine("---------------------------------------------------------------------------------------------");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saat mencari data pengaduan berdasarkan status: {ex.Message}");
-        }
-    }
 }
 
 class Program
@@ -1394,7 +1193,6 @@ class Program
         Console.WriteLine("3.Kamar Asrama");
         Console.WriteLine("4.Reservasi Kamar Asrama");
         Console.WriteLine("5.Pengaduan");
-        Console.WriteLine("6.Exit Program");
 
         Console.Write("Pilih Opsi:");
         string choice = Console.ReadLine();
@@ -1416,6 +1214,7 @@ class Program
             case "5":
                 Options.Pengaduan();
                 break;
+
             default:
                 Console.WriteLine("Opsi yang dimasukkan tidak valid!");
                 break;
@@ -1554,10 +1353,9 @@ class Options
         Console.WriteLine("1.Tampilkan Data");
         Console.WriteLine("2.Tambah Data");
         Console.WriteLine("3.Search Data");
-        Console.WriteLine("4.Filter Data");
-        Console.WriteLine("5.Ubah Data");
-        Console.WriteLine("6.Hapus Data");
-        Console.WriteLine("7.Kembali ke Halaman Awal");
+        Console.WriteLine("4.Ubah Data");
+        Console.WriteLine("5.Hapus Data");
+        Console.WriteLine("6.Kembali ke Halaman Awal");
 
         Console.Write("Pilih Opsi:");
         string choice = Console.ReadLine();
@@ -1573,15 +1371,12 @@ class Options
                 ReservasiFunction.HandleSearch();
                 break;
             case "4":
-                ReservasiFunction.HandleFilter();
-                break;
-            case "5":
                 ReservasiFunction.HandleUpdate();
                 break;
-            case "6":
+            case "5":
                 ReservasiFunction.HandleDelete();
                 break;
-            case "7":
+            case "6":
                 Program.mainOptions();
                 break;
             default:
@@ -1597,11 +1392,9 @@ class Options
         Console.WriteLine("--Opsi Pengaduan--");
         Console.WriteLine("1.Tampilkan Data");
         Console.WriteLine("2.Tambah Data");
-        Console.WriteLine("3.Filter Data");
-        Console.WriteLine("4.Search Data");
-        Console.WriteLine("5.Ubah Data");
-        Console.WriteLine("6.Hapus Data");
-        Console.WriteLine("7.Kembali ke Halaman Awal");
+        Console.WriteLine("3.Ubah Data");
+        Console.WriteLine("4.Hapus Data");
+        Console.WriteLine("5.Kembali ke Halaman Awal");
 
         Console.Write("Pilih Opsi:");
         string choice = Console.ReadLine();
@@ -1614,18 +1407,12 @@ class Options
                 PengaduanFunction.HandleCreate();
                 break;
             case "3":
-                PengaduanFunction.HandleFilter();
-                break;
-            case "4":
-                PengaduanFunction.HandleSearch();
-                break;
-            case "5":
                 PengaduanFunction.HandleUpdate();
                 break;
-            case "6":
+            case "4":
                 PengaduanFunction.HandleDelete();
                 break;
-            case "7":
+            case "5":
                 Program.mainOptions();
                 break;
             default:
@@ -2012,42 +1799,6 @@ class ReservasiFunction
         }
     }
 
-    public static void HandleFilter()
-    {
-        try
-        {
-            var model = new ReservasiModel();
-            Console.WriteLine("Filter Berdasarkan Status");
-            Console.WriteLine("1.Aktif");
-            Console.WriteLine("2.Selesai");
-            Console.WriteLine("3.Dibatalkan");
-            string keyword = Validation.GetStringInput("Filter Berdasarkan Status");
-            switch (keyword)
-            {
-                case "1":
-                    model.FilteringByStatus("Aktif");
-                    break;
-                case "2":
-                    model.FilteringByStatus("Selesai");
-                    break;
-                case "3":
-                    model.FilteringByStatus("Dibatalkan");
-                    break;
-                default:
-                    Console.WriteLine("Angka tidak valid!");
-                    break;
-            }
-            var choice = Helper.TurnBackOptions("Reservasi Kamar Asrama");
-            if (choice == "2")
-            {
-                Options.Reservasi();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saat melakukan pencarian: {ex.Message}");
-        }
-    }
 
     public static void HandleCreate()
     {
@@ -2064,7 +1815,7 @@ class ReservasiFunction
             Console.WriteLine("//Format(yyyy-mm-dd) *2024-12-01");
             string dateOut = Validation.GetDateInput("Tanggal Keluar");
             Console.WriteLine("*Aktif/Selesai/Dibatalkan");
-            string status = Validation.GetStatusReservasi("Status Reservasi");
+            string status = Validation.GetStringInput("Status Reservasi");
             model.Create(mahasiswaId, kamarId, dateIn, dateOut, status);
             var choice = Helper.TurnBackOptions("Reservasi Kamar Asrama");
             if (choice == "2")
@@ -2094,7 +1845,7 @@ class ReservasiFunction
             Console.WriteLine("//Format(yyyy-mm-dd) *2024-12-01");
             string dateOut = Validation.GetDateInput("Tanggal Keluar");
             Console.WriteLine("*Aktif/Selesai/Dibatalkan");
-            string status = Validation.GetStatusReservasi("Status Reservasi");
+            string status = Validation.GetStringInput("Status Reservasi");
             model.Update(id, mahasiswaId, kamarId, dateIn, dateOut, status);
             var choice = Helper.TurnBackOptions("Reservasi Kamar Asrama");
             if (choice == "2")
@@ -2153,63 +1904,6 @@ class PengaduanFunction
         }
     }
 
-    public static void HandleFilter()
-    {
-        try
-        {
-            var model = new PengaduanModel();
-            Console.WriteLine("Filter Berdasarkan Status");
-            Console.WriteLine("1.Diajukan");
-            Console.WriteLine("2.Selesai");
-            Console.WriteLine("3.Ditolak");
-            string keyword = Validation.GetStringInput("Filter Berdasarkan Status");
-            switch (keyword)
-            {
-                case "1":
-                    model.FilteringByStatus("Diajukan");
-                    break;
-                case "2":
-                    model.FilteringByStatus("Selesai");
-                    break;
-                case "3":
-                    model.FilteringByStatus("Ditolak");
-                    break;
-                default:
-                    Console.WriteLine("Angka tidak valid!");
-                    break;
-            }
-            var choice = Helper.TurnBackOptions("Pengaduan");
-            if (choice == "2")
-            {
-                Options.Pengaduan();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saat melakukan pencarian: {ex.Message}");
-        }
-    }
-
-    public static void HandleSearch()
-    {
-        try
-        {
-            var model = new PengaduanModel();
-            string keyword = Validation.GetStringInput("Masukkan keyword pencarian (Nama Mahasiswa, Nama Helpdesk, Status)");
-            model.Search(keyword);
-
-            var choice = Helper.TurnBackOptions("Pengaduan");
-            if (choice == "2")
-            {
-                Options.Pengaduan();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saat melakukan pencarian: {ex.Message}");
-        }
-    }
-
     public static void HandleCreate()
     {
         try
@@ -2224,7 +1918,7 @@ class PengaduanFunction
             string datePengaduan = Validation.GetDateInput("Tanggal Pengaduan");
             string description = Validation.GetStringInput("Deskripsi");
             Console.WriteLine("*Diajukan/Diproses/Diterima/Ditolak");
-            string status = Validation.GetStatusPengaduan("Status Pengajuan");
+            string status = Validation.GetStringInput("Status Pengajuan");
             model.Create(mahasiswaId, helpdeskId, datePengaduan, description, status);
             var choice = Helper.TurnBackOptions("Pengaduan");
             if (choice == "2")
@@ -2253,7 +1947,7 @@ class PengaduanFunction
             string datePengaduan = Validation.GetDateInput("Tanggal Pengaduan");
             string description = Validation.GetStringInput("Deskripsi");
             Console.WriteLine("*Diajukan/Diproses/Diterima/Ditolak");
-            string status = Validation.GetStatusPengaduan("Status Pengajuan");
+            string status = Validation.GetStringInput("Status Pengajuan");
             model.Update(id, mahasiswaId, helpdeskId, datePengaduan, description, status);
             var choice = Helper.TurnBackOptions("Pengaduan");
             if (choice == "2")
@@ -2336,47 +2030,6 @@ class Validation
             }
         }
     }
-
-    public static string GetStatusReservasi(string fieldName)
-    {
-        while (true)
-        {
-            Console.Write(fieldName + ": ");
-            string value = Console.ReadLine();
-
-            if (value == "Aktif" || value == "Dibatalkan" || value == "Selesai")
-            {
-                return value;
-            }
-            else
-            {
-                Console.WriteLine("");
-                Console.WriteLine("*Aktif/Selesai/Dibatalkan");
-                Console.WriteLine("Harap masukkan salah satu dari pilihan di atas!");
-            }
-        }
-    }
-
-    public static string GetStatusPengaduan(string fieldName)
-    {
-        while (true)
-        {
-            Console.Write(fieldName + ": ");
-            string value = Console.ReadLine();
-
-            if (value == "Diajukan" || value == "Selesai" || value == "Ditolak")
-            {
-                return value;
-            }
-            else
-            {
-                Console.WriteLine("");
-                Console.WriteLine("*Diajukan/Selesai/Ditolak");
-                Console.WriteLine("Harap masukkan salah satu dari pilihan di atas!");
-            }
-        }
-    }
-
 }
 
 class Helper
